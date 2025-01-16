@@ -117,7 +117,7 @@ apply_custom_styles()
 st.title("Starlink E-commerce Platform")
 
 # Add tabs for different sections
-tab1, tab2, tab3, tab4 = st.tabs(["Products", "Reports & Analytics", "Cart", "Product Management"])
+tab1, tab2, tab3, tab4 = st.tabs(["Products", "Reports & Analytics", "Cart", "Inventory Management"])
 
 def show_product_reviews(product):
     """Display reviews for a product"""
@@ -193,9 +193,9 @@ with tab1:
 
             with col2:
                 quantity = st.number_input(
-                    f"Quantity", 
-                    min_value=0, 
-                    max_value=product.quantity, 
+                    f"Quantity",
+                    min_value=0,
+                    max_value=product.quantity,
                     value=0,
                     key=f"qty_{product.name}"
                 )
@@ -286,7 +286,7 @@ with tab3:
             st.session_state.checkout_step = 2
 
 with tab4:
-    st.header("Product Management")
+    st.header("Inventory Management")
 
     # Add new product form
     st.subheader("Add New Product")
@@ -314,11 +314,31 @@ with tab4:
     st.subheader("Current Inventory")
     products_df = pd.DataFrame(st.session_state.inventory_manager.get_all_products())
     if not products_df.empty:
+        # Calculate totals
+        total_quantity = products_df['quantity'].sum()
+        total_value = products_df['total_value'].sum()
+
+        # Create a DataFrame for display
+        display_df = products_df[['name', 'price', 'quantity', 'total_value']].copy()
+
+        # Add totals row
+        totals_df = pd.DataFrame([{
+            'name': 'TOTAL',
+            'price': '',
+            'quantity': total_quantity,
+            'total_value': total_value
+        }])
+
+        # Combine main dataframe with totals
+        display_df = pd.concat([display_df, totals_df], ignore_index=True)
+
+        # Display the dataframe with renamed columns
         st.dataframe(
-            products_df[['name', 'price', 'quantity', 'total_value']].rename(columns={
+            display_df.rename(columns={
                 'name': 'Product Name',
                 'price': 'Price (€)',
                 'quantity': 'Quantity',
                 'total_value': 'Total Value (€)'
-            })
+            }),
+            hide_index=True
         )
