@@ -86,7 +86,7 @@ with tab1:
             col1, col2, col3 = st.columns([2, 1, 1])
             with col1:
                 st.write(f"### {product.name}")
-                st.write(f"Price: ${product.price:.2f}")
+                st.write(f"Price: €{product.price:.2f}")
                 st.write(f"Available: {product.quantity}")
             with col2:
                 quantity = st.number_input(
@@ -125,7 +125,12 @@ with tab2:
         df,
         values='total_value',
         names='name',
-        title='Total Value Distribution by Product'
+        title='Total Value Distribution by Product',
+        hover_data=['price']
+    )
+    # Update hover template to show Euro symbol
+    fig_value.update_traces(
+        hovertemplate="<b>%{label}</b><br>Value: €%{value:.2f}<br>Price: €%{customdata[0]:.2f}<extra></extra>"
     )
     st.plotly_chart(fig_value)
 
@@ -152,14 +157,14 @@ with tab3:
             with st.container():
                 col1, col2 = st.columns([3, 1])
                 with col1:
-                    st.write(f"{item_name} (x{item_data['quantity']})")
+                    st.write(f"{item_name} (x{item_data['quantity']}) - €{item_data['product'].price * item_data['quantity']:.2f}")
                 with col2:
                     if st.button("Remove", key=f"remove_{item_name}"):
                         st.session_state.cart.remove_from_cart(item_name)
                         st.rerun()
 
         total = st.session_state.cart.calculate_cart_total()
-        st.write(f"Total: ${total:.2f}")
+        st.write(f"Total: €{total:.2f}")
 
         if st.button("Proceed to Checkout"):
             st.session_state.checkout_step = 2
@@ -171,7 +176,7 @@ with tab4:
     st.subheader("Add New Product")
     with st.form("add_product_form"):
         new_product_name = st.text_input("Product Name")
-        new_product_price = st.number_input("Price ($)", min_value=0.01, format="%.2f")
+        new_product_price = st.number_input("Price (€)", min_value=0.01, format="%.2f")
         new_product_quantity = st.number_input("Initial Quantity", min_value=1, value=1)
 
         submitted = st.form_submit_button("Add Product")
@@ -194,8 +199,8 @@ with tab4:
         st.dataframe(
             products_df[['name', 'price', 'quantity', 'total_value']].rename(columns={
                 'name': 'Product Name',
-                'price': 'Price ($)',
+                'price': 'Price (€)',
                 'quantity': 'Quantity',
-                'total_value': 'Total Value ($)'
+                'total_value': 'Total Value (€)'
             })
         )
