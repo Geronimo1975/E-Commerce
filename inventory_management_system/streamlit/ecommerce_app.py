@@ -10,6 +10,7 @@ from inventory_management_system.streamlit.styles import apply_custom_styles
 import plotly.express as px
 import pandas as pd
 import logging
+from functools import lru_cache
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -22,6 +23,11 @@ if 'checkout_step' not in st.session_state:
     st.session_state.checkout_step = 1
 if 'payment_processor' not in st.session_state:
     st.session_state.payment_processor = PaymentProcessor()
+
+@st.cache_data(ttl=300)  # Cache for 5 minutes
+def get_products_data(inventory_manager):
+    """Get cached products data"""
+    return inventory_manager.get_all_products()
 
 def init_app():
     """Initialize the application state"""
@@ -81,8 +87,11 @@ tab1, tab2, tab3, tab4 = st.tabs(["Products", "Reports & Analytics", "Cart", "Pr
 with tab1:
     # Display products
     st.header("Available Products")
+
+    # Get cached products data
     for product in st.session_state.inventory_manager.products:
         with st.container():
+            st.markdown('<div class="product-card">', unsafe_allow_html=True)
             col1, col2, col3 = st.columns([2, 1, 1])
             with col1:
                 st.write(f"### {product.name}")
@@ -100,15 +109,17 @@ with tab1:
                 if st.button("Add to Cart", key=f"add_{product.name}") and quantity > 0:
                     st.session_state.cart.add_to_cart(product, quantity)
                     st.success(f"Added {quantity} {product.name} to cart!")
+            st.markdown('</div>', unsafe_allow_html=True)
 
 with tab2:
     st.header("Reports & Analytics")
 
     # Get products data
-    products_data = st.session_state.inventory_manager.get_all_products()
+    products_data = get_products_data(st.session_state.inventory_manager)
     df = pd.DataFrame(products_data)
 
     # Product Inventory Chart
+    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.subheader("Product Inventory Levels")
     fig_inventory = px.bar(
         df,
@@ -117,9 +128,11 @@ with tab2:
         title='Current Inventory Levels',
         labels={'name': 'Product Name', 'quantity': 'Available Units'}
     )
-    st.plotly_chart(fig_inventory)
+    st.plotly_chart(fig_inventory, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Product Value Chart
+    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.subheader("Product Value Distribution")
     fig_value = px.pie(
         df,
@@ -132,10 +145,12 @@ with tab2:
     fig_value.update_traces(
         hovertemplate="<b>%{label}</b><br>Value: €%{value:.2f}<br>Price: €%{customdata[0]:.2f}<extra></extra>"
     )
-    st.plotly_chart(fig_value)
+    st.plotly_chart(fig_value, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Export Options
     st.subheader("Export Reports")
+    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Export to PDF"):
@@ -145,6 +160,7 @@ with tab2:
         if st.button("Export to Excel"):
             excel_file = st.session_state.export_manager.export_to_excel()
             st.success(f"Excel report generated: {excel_file}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with tab3:
     # Display cart
@@ -154,17 +170,20 @@ with tab3:
         st.write("Cart is empty")
     else:
         for item_name, item_data in cart_items.items():
-            with st.container():
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.write(f"{item_name} (x{item_data['quantity']}) - €{item_data['product'].price * item_data['quantity']:.2f}")
-                with col2:
-                    if st.button("Remove", key=f"remove_{item_name}"):
-                        st.session_state.cart.remove_from_cart(item_name)
-                        st.rerun()
+            st.markdown('<div class="cart-item">', unsafe_allow_html=True)
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(f"{item_name} (x{item_data['quantity']}) - €{item_data['product'].price * item_data['quantity']:.2f}")
+            with col2:
+                if st.button("Remove", key=f"remove_{item_name}"):
+                    st.session_state.cart.remove_from_cart(item_name)
+                    st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
         total = st.session_state.cart.calculate_cart_total()
+        st.markdown('<div class="cart-total">', unsafe_allow_html=True)
         st.write(f"Total: €{total:.2f}")
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if st.button("Proceed to Checkout"):
             st.session_state.checkout_step = 2
@@ -174,6 +193,7 @@ with tab4:
 
     # Add new product form
     st.subheader("Add New Product")
+    st.markdown('<div class="stForm">', unsafe_allow_html=True)
     with st.form("add_product_form"):
         new_product_name = st.text_input("Product Name")
         new_product_price = st.number_input("Price (€)", min_value=0.01, format="%.2f")
@@ -191,6 +211,7 @@ with tab4:
                 st.rerun()  # Refresh to show the new product
             except ValueError as e:
                 st.error(f"Error adding product: {str(e)}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Display current inventory
     st.subheader("Current Inventory")
