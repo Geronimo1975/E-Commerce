@@ -1,7 +1,7 @@
 [project]
-name = "repl-nix-workspace"
+name = "inventory-management-system"
 version = "0.1.0"
-description = "Add your description here"
+description = "E-commerce platform with Streamlit interface"
 requires-python = ">=3.11"
 dependencies = [
     "fpdf>=1.7.2",
@@ -12,3 +12,7 @@ dependencies = [
     "psycopg2-binary>=2.9.10",
     "streamlit>=1.41.1",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -225,6 +225,31 @@ wheels = [
 ]
 
 [[package]]
+name = "inventory-management-system"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "fpdf" },
+    { name = "inventory" },
+    { name = "openpyxl" },
+    { name = "pandas" },
+    { name = "pillow" },
+    { name = "psycopg2-binary" },
+    { name = "streamlit" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fpdf", specifier = ">=1.7.2" },
+    { name = "inventory", specifier = ">=2.0.1" },
+    { name = "openpyxl", specifier = ">=3.1.5" },
+    { name = "pandas", specifier = ">=2.2.3" },
+    { name = "pillow", specifier = ">=11.1.0" },
+    { name = "psycopg2-binary", specifier = ">=2.9.10" },
+    { name = "streamlit", specifier = ">=1.41.1" },
+]
+
+[[package]]
 name = "itsdangerous"
 version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -677,31 +702,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/99/5b/73ca1f8e72fff6fa52119dbd185f73a907b1989428917b24cff660129b6d/referencing-0.35.1.tar.gz", hash = "sha256:25b42124a6c8b632a425174f24087783efb348a6f1e0008e63cd4466fedf703c", size = 62991 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/59/2056f61236782a2c86b33906c025d4f4a0b17be0161b63b70fd9e8775d36/referencing-0.35.1-py3-none-any.whl", hash = "sha256:eda6d3234d62814d1c64e305c1331c9a3a6132da475ab6382eaa997b21ee75de", size = 26684 },
-]
-
-[[package]]
-name = "repl-nix-workspace"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "fpdf" },
-    { name = "inventory" },
-    { name = "openpyxl" },
-    { name = "pandas" },
-    { name = "pillow" },
-    { name = "psycopg2-binary" },
-    { name = "streamlit" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fpdf", specifier = ">=1.7.2" },
-    { name = "inventory", specifier = ">=2.0.1" },
-    { name = "openpyxl", specifier = ">=3.1.5" },
-    { name = "pandas", specifier = ">=2.2.3" },
-    { name = "pillow", specifier = ">=11.1.0" },
-    { name = "psycopg2-binary", specifier = ">=2.9.10" },
-    { name = "streamlit", specifier = ">=1.41.1" },
 ]
 
 [[package]]
