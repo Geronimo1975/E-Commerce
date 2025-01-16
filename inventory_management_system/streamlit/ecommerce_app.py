@@ -76,7 +76,7 @@ apply_custom_styles()
 st.title("Starlink E-commerce Platform")
 
 # Add tabs for different sections
-tab1, tab2, tab3 = st.tabs(["Products", "Reports & Analytics", "Cart"])
+tab1, tab2, tab3, tab4 = st.tabs(["Products", "Reports & Analytics", "Cart", "Product Management"])
 
 with tab1:
     # Display products
@@ -163,3 +163,39 @@ with tab3:
 
         if st.button("Proceed to Checkout"):
             st.session_state.checkout_step = 2
+
+with tab4:
+    st.header("Product Management")
+
+    # Add new product form
+    st.subheader("Add New Product")
+    with st.form("add_product_form"):
+        new_product_name = st.text_input("Product Name")
+        new_product_price = st.number_input("Price ($)", min_value=0.01, format="%.2f")
+        new_product_quantity = st.number_input("Initial Quantity", min_value=1, value=1)
+
+        submitted = st.form_submit_button("Add Product")
+        if submitted:
+            try:
+                st.session_state.inventory_manager.add_product(
+                    new_product_name,
+                    new_product_price,
+                    new_product_quantity
+                )
+                st.success(f"Successfully added product: {new_product_name}")
+                st.rerun()  # Refresh to show the new product
+            except ValueError as e:
+                st.error(f"Error adding product: {str(e)}")
+
+    # Display current inventory
+    st.subheader("Current Inventory")
+    products_df = pd.DataFrame(st.session_state.inventory_manager.get_all_products())
+    if not products_df.empty:
+        st.dataframe(
+            products_df[['name', 'price', 'quantity', 'total_value']].rename(columns={
+                'name': 'Product Name',
+                'price': 'Price ($)',
+                'quantity': 'Quantity',
+                'total_value': 'Total Value ($)'
+            })
+        )
