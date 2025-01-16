@@ -18,6 +18,34 @@ from functools import lru_cache
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Theme configuration
+THEMES = {
+    "Default Magenta": {
+        "primary": "#E91E63",
+        "secondary": "#C2185B",
+        "background": "#FFFFFF",
+        "text": "#333333"
+    },
+    "Ocean Blue": {
+        "primary": "#1976D2",
+        "secondary": "#0D47A1",
+        "background": "#F5F5F5",
+        "text": "#212121"
+    },
+    "Forest Green": {
+        "primary": "#2E7D32",
+        "secondary": "#1B5E20",
+        "background": "#FFFFFF",
+        "text": "#333333"
+    },
+    "Royal Purple": {
+        "primary": "#7B1FA2",
+        "secondary": "#4A148C",
+        "background": "#F3E5F5",
+        "text": "#212121"
+    }
+}
+
 # Initialize session state
 if 'cart' not in st.session_state:
     st.session_state.cart = Cart()
