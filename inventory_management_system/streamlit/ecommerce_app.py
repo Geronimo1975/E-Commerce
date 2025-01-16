@@ -25,9 +25,10 @@ if 'payment_processor' not in st.session_state:
     st.session_state.payment_processor = PaymentProcessor()
 
 @st.cache_data(ttl=300)  # Cache for 5 minutes
-def get_products_data(inventory_manager):
+def get_products_data(_inventory_manager):
     """Get cached products data"""
-    return inventory_manager.get_all_products()
+    products = _inventory_manager.get_all_products()
+    return products
 
 def init_app():
     """Initialize the application state"""
