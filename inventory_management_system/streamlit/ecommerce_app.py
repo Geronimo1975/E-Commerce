@@ -4,8 +4,11 @@ from inventory_management_system.inventory.inventory_manager import InventoryMan
 from inventory_management_system.inventory.user_manager import UserManager
 from inventory_management_system.inventory.user import UserRole
 from inventory_management_system.inventory.cart import Cart
+from inventory_management_system.inventory.export_manager import ExportManager
 from inventory_management_system.streamlit.payments import PaymentProcessor, PaymentDetails
 from inventory_management_system.streamlit.styles import apply_custom_styles
+import plotly.express as px
+import pandas as pd
 import logging
 
 # Configure logging
@@ -60,6 +63,9 @@ def init_app():
     if 'user_manager' not in st.session_state:
         st.session_state.user_manager = UserManager()
 
+    if 'export_manager' not in st.session_state:
+        st.session_state.export_manager = ExportManager(st.session_state.inventory_manager)
+
 # Initialize the application
 init_app()
 
@@ -69,40 +75,91 @@ apply_custom_styles()
 # Create main page layout
 st.title("Starlink E-commerce Platform")
 
-# Display products
-st.header("Available Products")
-for product in st.session_state.inventory_manager.products:
-    with st.container():
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write(f"### {product.name}")
-            st.write(f"Price: ${product.price:.2f}")
-            st.write(f"Available: {product.quantity}")
-        with col2:
-            quantity = st.number_input(f"Quantity for {product.name}", 
-                                    min_value=0, 
-                                    max_value=product.quantity, 
-                                    value=0,
-                                    key=f"qty_{product.name}")
-        with col3:
-            if st.button("Add to Cart", key=f"add_{product.name}") and quantity > 0:
-                st.session_state.cart.add_to_cart(product, quantity)
-                st.success(f"Added {quantity} {product.name} to cart!")
+# Add tabs for different sections
+tab1, tab2, tab3 = st.tabs(["Products", "Reports & Analytics", "Cart"])
 
-# Display cart
-st.sidebar.header("Shopping Cart")
-cart_items = st.session_state.cart.cart_items
-if not cart_items:
-    st.sidebar.write("Cart is empty")
-else:
-    for item_name, item_data in cart_items.items():
-        st.sidebar.write(f"{item_name} (x{item_data['quantity']})")
-        if st.sidebar.button("Remove", key=f"remove_{item_name}"):
-            st.session_state.cart.remove_from_cart(item_name)
-            st.rerun()
+with tab1:
+    # Display products
+    st.header("Available Products")
+    for product in st.session_state.inventory_manager.products:
+        with st.container():
+            col1, col2, col3 = st.columns([2, 1, 1])
+            with col1:
+                st.write(f"### {product.name}")
+                st.write(f"Price: ${product.price:.2f}")
+                st.write(f"Available: {product.quantity}")
+            with col2:
+                quantity = st.number_input(
+                    f"Quantity for {product.name}", 
+                    min_value=0, 
+                    max_value=product.quantity, 
+                    value=0,
+                    key=f"qty_{product.name}"
+                )
+            with col3:
+                if st.button("Add to Cart", key=f"add_{product.name}") and quantity > 0:
+                    st.session_state.cart.add_to_cart(product, quantity)
+                    st.success(f"Added {quantity} {product.name} to cart!")
 
-    total = st.session_state.cart.calculate_cart_total()
-    st.sidebar.write(f"Total: ${total:.2f}")
+with tab2:
+    st.header("Reports & Analytics")
 
-    if st.sidebar.button("Proceed to Checkout"):
-        st.session_state.checkout_step = 2
+    # Get products data
+    products_data = st.session_state.inventory_manager.get_all_products()
+    df = pd.DataFrame(products_data)
+
+    # Product Inventory Chart
+    st.subheader("Product Inventory Levels")
+    fig_inventory = px.bar(
+        df,
+        x='name',
+        y='quantity',
+        title='Current Inventory Levels',
+        labels={'name': 'Product Name', 'quantity': 'Available Units'}
+    )
+    st.plotly_chart(fig_inventory)
+
+    # Product Value Chart
+    st.subheader("Product Value Distribution")
+    fig_value = px.pie(
+        df,
+        values='total_value',
+        names='name',
+        title='Total Value Distribution by Product'
+    )
+    st.plotly_chart(fig_value)
+
+    # Export Options
+    st.subheader("Export Reports")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Export to PDF"):
+            pdf_file = st.session_state.export_manager.export_to_pdf()
+            st.success(f"PDF report generated: {pdf_file}")
+    with col2:
+        if st.button("Export to Excel"):
+            excel_file = st.session_state.export_manager.export_to_excel()
+            st.success(f"Excel report generated: {excel_file}")
+
+with tab3:
+    # Display cart
+    st.header("Shopping Cart")
+    cart_items = st.session_state.cart.cart_items
+    if not cart_items:
+        st.write("Cart is empty")
+    else:
+        for item_name, item_data in cart_items.items():
+            with st.container():
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"{item_name} (x{item_data['quantity']})")
+                with col2:
+                    if st.button("Remove", key=f"remove_{item_name}"):
+                        st.session_state.cart.remove_from_cart(item_name)
+                        st.rerun()
+
+        total = st.session_state.cart.calculate_cart_total()
+        st.write(f"Total: ${total:.2f}")
+
+        if st.button("Proceed to Checkout"):
+            st.session_state.checkout_step = 2
