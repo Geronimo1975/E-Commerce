@@ -24,6 +24,39 @@ def init_app():
     """Initialize the application state"""
     if 'inventory_manager' not in st.session_state:
         st.session_state.inventory_manager = InventoryManager()
+
+        # Add Starlink products
+        st.session_state.inventory_manager.add_product(
+            "Starlink Standard Kit",
+            599.00,
+            50
+        )
+        st.session_state.inventory_manager.add_product(
+            "Starlink High Performance Kit",
+            2500.00,
+            25
+        )
+        st.session_state.inventory_manager.add_product(
+            "Starlink Maritime",
+            5000.00,
+            10
+        )
+        st.session_state.inventory_manager.add_product(
+            "Starlink RV Kit",
+            599.00,
+            30
+        )
+        st.session_state.inventory_manager.add_product(
+            "Starlink Mobility Kit",
+            2500.00,
+            15
+        )
+        st.session_state.inventory_manager.add_product(
+            "Starlink Aviation Terminal",
+            150000.00,
+            5
+        )
+
     if 'user_manager' not in st.session_state:
         st.session_state.user_manager = UserManager()
 
