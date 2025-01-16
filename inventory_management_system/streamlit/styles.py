@@ -198,5 +198,46 @@ def apply_custom_styles():
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin: 2rem 0;
         }
+        /* Payment form styles */
+        .payment-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 2rem 0;
+        }
+
+        .payment-form input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .payment-form input:focus {
+            border-color: #2563EB;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+            outline: none;
+        }
+
+        .payment-form .stButton>button {
+            background: #2563EB;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            border: none;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-form .stButton>button:hover {
+            background: #1D4ED8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
         </style>
     """, unsafe_allow_html=True)

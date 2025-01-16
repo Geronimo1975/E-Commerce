@@ -11,6 +11,7 @@ import plotly.express as px
 import pandas as pd
 import logging
 from functools import lru_cache
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -284,6 +285,56 @@ with tab3:
 
         if st.button("Proceed to Checkout"):
             st.session_state.checkout_step = 2
+
+        # Show payment form when in checkout step
+        if st.session_state.checkout_step == 2:
+            def show_payment_form():
+                """Display the payment form and process payment"""
+                st.markdown('<div class="payment-form">', unsafe_allow_html=True)
+                st.subheader("Payment Details")
+
+                # Payment form
+                with st.form("payment_form"):
+                    st.write(f"Total Amount: €{st.session_state.cart.calculate_cart_total():.2f}")
+
+                    # Card details
+                    card_number = st.text_input("Card Number", max_chars=16)
+                    col1, col2, col3 = st.columns([1, 1, 1])
+                    with col1:
+                        exp_month = st.number_input("Expiry Month", min_value=1, max_value=12)
+                    with col2:
+                        current_year = datetime.now().year % 100
+                        exp_year = st.number_input("Expiry Year", min_value=current_year, max_value=current_year + 10)
+                    with col3:
+                        cvv = st.text_input("CVV", max_chars=4)
+
+                    submitted = st.form_submit_button("Process Payment")
+                    if submitted:
+                        if not all([card_number, exp_month, exp_year, cvv]):
+                            st.error("Please fill in all payment details")
+                            return
+
+                        payment_details = PaymentDetails(
+                            card_number=card_number,
+                            expiry_month=exp_month,
+                            expiry_year=exp_year,
+                            cvv=cvv,
+                            amount=st.session_state.cart.calculate_cart_total()
+                        )
+
+                        result = st.session_state.payment_processor.process_payment(payment_details)
+
+                        if result.success:
+                            st.success("Payment processed successfully!")
+                            st.session_state.cart = Cart()  # Clear cart after successful payment
+                            st.session_state.checkout_step = 1
+                            st.rerun()
+                        else:
+                            st.error(f"Payment failed: {result.error_message}")
+
+                st.markdown('</div>', unsafe_allow_html=True)
+            show_payment_form()
+
 
 with tab4:
     st.header("Inventory Management")
