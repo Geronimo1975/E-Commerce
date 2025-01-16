@@ -12,11 +12,15 @@ import pandas as pd
 import logging
 from functools import lru_cache
 
-
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Initialize session state for review form
+if 'show_review_form' not in st.session_state:
+    st.session_state.show_review_form = False
+if 'selected_product' not in st.session_state:
+    st.session_state.selected_product = None
 
 # Theme configuration
 THEMES = {
@@ -115,6 +119,50 @@ st.title("Starlink E-commerce Platform")
 # Add tabs for different sections
 tab1, tab2, tab3, tab4 = st.tabs(["Products", "Reports & Analytics", "Cart", "Product Management"])
 
+def show_product_reviews(product):
+    """Display reviews for a product"""
+    reviews = product.get_reviews()
+    if not reviews:
+        st.write("No reviews yet")
+        return
+
+    for review in reviews:
+        st.markdown(f"""
+        <div class="review-card">
+            <div class="review-header">
+                <span class="review-rating">{'★' * review['rating']}{'☆' * (5 - review['rating'])}</span>
+                <span class="review-user">{review['user_name']}</span>
+                <span class="review-date">{review['timestamp']}</span>
+            </div>
+            <div class="review-comment">{review['comment']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+def show_review_form(product):
+    """Display the review form for a product"""
+    st.markdown('<div class="review-form">', unsafe_allow_html=True)
+    st.subheader(f"Write a Review for {product.name}")
+
+    rating = st.slider("Rating", 1, 5, 5, key=f"rating_{product.name}")
+    comment = st.text_area("Your Review", key=f"comment_{product.name}")
+    user_name = st.text_input("Your Name (optional)", value="Anonymous", key=f"user_{product.name}")
+
+    if st.button("Submit Review", key=f"submit_{product.name}"):
+        try:
+            product.add_review(rating, comment, user_name)
+            st.success("Thank you for your review!")
+            st.session_state.show_review_form = False
+            st.session_state.selected_product = None
+            st.rerun()
+        except ValueError as e:
+            st.error(f"Error submitting review: {str(e)}")
+
+    if st.button("Cancel"):
+        st.session_state.show_review_form = False
+        st.session_state.selected_product = None
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
 with tab1:
     # Display products
     st.header("Available Products")
@@ -123,24 +171,42 @@ with tab1:
     for product in st.session_state.inventory_manager.products:
         with st.container():
             st.markdown('<div class="product-card">', unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([2, 1, 1])
+            col1, col2 = st.columns([3, 1])
+
             with col1:
                 st.write(f"### {product.name}")
                 st.write(f"Price: €{product.price:.2f}")
                 st.write(f"Available: {product.quantity}")
+
+                # Display average rating
+                avg_rating = product.get_average_rating()
+                if avg_rating is not None:
+                    st.write(f"Rating: {'★' * int(avg_rating)}{'☆' * (5 - int(avg_rating))} ({avg_rating:.1f})")
+
+                # Show reviews in an expander
+                with st.expander("See Reviews"):
+                    show_product_reviews(product)
+
+                if st.button("Write a Review", key=f"review_btn_{product.name}"):
+                    st.session_state.show_review_form = True
+                    st.session_state.selected_product = product
+
             with col2:
                 quantity = st.number_input(
-                    f"Quantity for {product.name}", 
+                    f"Quantity", 
                     min_value=0, 
                     max_value=product.quantity, 
                     value=0,
                     key=f"qty_{product.name}"
                 )
-            with col3:
                 if st.button("Add to Cart", key=f"add_{product.name}") and quantity > 0:
                     st.session_state.cart.add_to_cart(product, quantity)
                     st.success(f"Added {quantity} {product.name} to cart!")
             st.markdown('</div>', unsafe_allow_html=True)
+
+    # Show review form if triggered
+    if st.session_state.show_review_form and st.session_state.selected_product:
+        show_review_form(st.session_state.selected_product)
 
 with tab2:
     st.header("Reports & Analytics")

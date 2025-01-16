@@ -153,5 +153,50 @@ def apply_custom_styles():
         .dataframe tr:hover {
             background: #F3F4F6;
         }
+
+        /* Review card styles */
+        .review-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .review-rating {
+            color: #FFD700;
+            font-size: 1.2em;
+        }
+
+        .review-user {
+            font-weight: 600;
+        }
+
+        .review-date {
+            color: #999;
+        }
+
+        .review-comment {
+            color: #333;
+            line-height: 1.5;
+        }
+
+        /* Review form styles */
+        .review-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 2rem 0;
+        }
         </style>
     """, unsafe_allow_html=True)
